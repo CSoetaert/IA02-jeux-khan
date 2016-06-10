@@ -181,11 +181,13 @@ placerPionR(NomPion) :-
 		write(NomPion), tab(1),
 		write('V : '),
 		read(X),
+		integer(X),
 		X =< 6,
 		X >= 1,
 		nl,
 		write('H : '),
 		read(Y),
+		integer(Y),
 		Y =< 2,
 		Y >= 1,
 		nl,
@@ -198,11 +200,13 @@ placerPionO(NomPion) :-
 		write(NomPion), tab(1),
 		write('V : '),
 		read(X),
+		integer(X),
 		X =< 6,
 		X >= 1,
 		nl,
 		write('H : '),
 		read(Y),
+		integer(Y),
 		Y =< 6,
 		Y >= 5,
 		nl,
@@ -299,6 +303,7 @@ listePion([], Board, ocre, PionRessucite,V) :-
 		write('voulez-vous ressuciter(0) un pion ou jouer un pion(1) '),
 		nl,
 		read(Action),
+		integer(Action),
 		Action = 0,
 		ressuciterPion(M,PionRessucite),
 		valeurPion(PionRessucite,V),!.
@@ -308,6 +313,7 @@ listePion([], Board, rouge, PionRessucite, V) :-
 		write('voulez-vous ressuciter(0) un pion ou jouer un pion(1) '),
 		nl,
 		read(Action),
+		integer(Action),
 		Action = 0,
 		ressuciterPion(M,PionRessucite,V),!.
 
@@ -317,6 +323,7 @@ listePion([], Board, ocre, PionPouvantBouger,V) :-
 		write('voulez-vous ressuciter(0) un pion ou jouer un pion(1) '),
 		nl,
 		read(Action),
+		integer(Action),
 		Action = 1,
 		pionOcreEnVie(PionPouvantBouger),
 		valeurPion(PionRessucite,V),!.
@@ -326,6 +333,7 @@ listePion([], Board, rouge, PionPouvantBouger,V) :-
 		write('voulez-vous ressuciter(0) un pion ou jouer un pion(1) '),
 		nl,
 		read(Action),
+		integer(Action),
 		Action = 1,
 		pionRougeEnVie(PionPouvantBouger),
 		valeurPion(PionRessucite,V),!.
@@ -431,13 +439,20 @@ possibleMoves(Board,Player,PossibleMoveList) :-
 		listePion(PionList,Board,Player,Pion,V),
 		typeMouvementPossible(Pion,PossibleMoveList,Player).
 
-verifierPionSelectionR(kr).
-verifierPionSelectionR(s1r).
-verifierPionSelectionR(s2r).
-verifierPionSelectionR(s3r).
-verifierPionSelectionR(s4r).
-verifierPionSelectionR(s5r).
+verifierPionSelectionR(kr) :-!.
+verifierPionSelectionR(s1r) :-!.
+verifierPionSelectionR(s2r):-!.
+verifierPionSelectionR(s3r):-!.
+verifierPionSelectionR(s4r):-!.
+verifierPionSelectionR(s5r):-!.
 verifierPionSelectionR(X) :- write('Pion selectioné invalide ! '),nl, fail.
+verifierPionSelectionO(ko):-!.
+verifierPionSelectionO(s1o):-!.
+verifierPionSelectionO(s2o):-!.
+verifierPionSelectionO(s3o):-!.
+verifierPionSelectionO(s4o):-!.
+verifierPionSelectionO(s5o):-!.
+verifierPionSelectionO(X) :- write('Pion selectioné invalide ! '),nl, fail.
 
 gagne(ocre):-
 		pionRougeMort(L),
@@ -450,56 +465,16 @@ gagne(rouge):-
 mouvementPion(T,[T|M],M).
 
 parcoursMouvements([],_,[]).
-
 parcoursMouvements([T|_],NomPion,Mouvements):-
 		mouvementPion(NomPion,T,Mouvements),!.
-
 parcoursMouvements([_|Q],NomPion,M):-
-		parcoursMouvements(Q,NomPion,M),!.
-
-
+		parcoursMouvements(Q,NomPion,M).
 
 verifierDeplacement(Nom,Position,Player):-
 		possibleMoves(Board,Player,Lmoves),
 		parcoursMouvements(Lmoves,Nom,LmovePion),
+		afficheListe(LmovePion)
 		element(LmovePion,Position).
-
-jouerCoupR([X,Y]) :- 	
-		lposition(L),
-		%% N is (Y-1)*6+X, 
-		%% nElement(N,L,NomPion),
-		nomPion(NomPion,L,[X,Y])
-		verifierPionSelectionR(NomPion),
-		write('Nouvelle position V :  '), read(NewX),
-		write('Nouvelle position H :  '), read(NewY),
-		verifierDeplacement(NomPion,[NewX,NewY],rouge),
-	    rafraichirPositionCoup(n, [X,Y]),
-		rafraichirPositionCoup(NomPion, [NewX,NewY]),
-		replaceKhan([NewX,NewY]).		     
-
-jouerRouge(Arg) :-	
-		write('Position V du pion à bouger : '), read(X),
-		write('Position H du pion à bouger : '), read(Y),
-		jouerCoupR([X,Y]).
-		
-
-jouerRouge(Arg) :- jouerRouge(Arg).
-
-deplacerPionRouge():-
-		write('Rou')
-
-tour():-
-		afficherJeu(Arg),
-		deplacerPionRouge(),
-		verifierDeplacement(),
-		miseAJourPlateau(),
-		\+gagne(rouge),
-		afficherJeu(Arg),
-		deplacerPionOcre(),
-		verifierDeplacement(),
-		miseAJourPlateau(),
-		\+gagne(ocre).
-
 
 					   
 rafraichirPositionCoup(Nom,[X,Y]) :- 
@@ -508,9 +483,78 @@ rafraichirPositionCoup(Nom,[X,Y]) :-
 		replace(L1,N,Nom,L2),
 		replaceLposition(L2).
 
+jouerCoupR([X,Y]) :- 	
+		lposition(L),
+		%% N is (Y-1)*6+X, 
+		%% nElement(N,L,NomPion),
+		nomPion(NomPion,L,[X,Y]),
+		verifierPionSelectionR(NomPion),
+		write('Nouvelle position V :  '), read(NewX), integer(NewX),
+		write('Nouvelle position H :  '), read(NewY), integer(NewY),
+		verifierDeplacement(NomPion,[NewX,NewY],rouge),
+	    rafraichirPositionCoup(n, [X,Y]),
+		rafraichirPositionCoup(NomPion, [NewX,NewY]),
+		replaceKhan([NewX,NewY]),!.	
+
+jouerCoupR(X) :- write('mouvement impossible, rejouez'),nl,jouerCoupR(X).
+
+jouerRouge(Arg) :-
+		khan([]),	
+		write('Rouge: '),nl,
+		write('Position V du pion à bouger : '), read(X), integer(X),
+		write('Position H du pion à bouger : '), read(Y), integer(Y),
+		valeurPosition([X,Y],L,V),
+		jouerCoupR([X,Y]),!.
+
+jouerRouge(Arg) :-	
+		valeurKhan(V),
+		write('Rouge: '),nl,
+		write('Position V du pion à bouger : '), read(X), integer(X),
+		write('Position H du pion à bouger : '), read(Y), integer(Y),
+		lposition(L),
+		valeurPosition([X,Y],L,V),
+		jouerCoupR([X,Y]),!.
+
+jouerRouge(Arg) :- write('Pion non valide veuilliez jouer un autre pion'),jouerRouge(Arg).
+
+jouerCoupO([X,Y]) :- 	
+		lposition(L),
+		%% N is (Y-1)*6+X, 
+		%% nElement(N,L,NomPion),
+		nomPion(NomPion,L,[X,Y]),
+		verifierPionSelectionO(NomPion),
+		write('Nouvelle position V :  '), read(NewX), integer(NewX),
+		write('Nouvelle position H :  '), read(NewY), integer(NewY),
+		verifierDeplacement(NomPion,[NewX,NewY],ocre),
+	    rafraichirPositionCoup(n, [X,Y]),
+		rafraichirPositionCoup(NomPion, [NewX,NewY]),
+		replaceKhan([NewX,NewY]),!.
+
+jouerCoup0(X) :- write('mouvement impossible, rejouez'),nl,jouerCoup0(X).		     
+
+jouerOcre(Arg) :-
+		write('Ocre :'),nl,	
+		write('Position V du pion à bouger : '), read(X), integer(X),
+		write('Position H du pion à bouger : '), read(Y), integer(Y),
+		lposition(L),
+		valeurKhan(V),
+		valeurPosition([X,Y],L,V),
+		jouerCoupO([X,Y]),!.
+		
+
+jouerOcre(Arg) :- write('Pion non valide veuilliez jouer un autre pion'),jouerOcre(Arg).
 
 
-
+tour(Arg) :-gagne(rouge), write('victoire de rouge'),!.
+tour(Arg) :-gagne(ocre),write('victoire de ocre'),!.
+tour(Arg):-
+		afficherJeu(Arg),
+		jouerRouge(Arg),
+		\+gagne(rouge),
+		afficherJeu(Arg),
+		jouerOcre(Arg),
+		\+gagne(ocre),
+		tour(Arg).
 
 
 
@@ -557,6 +601,7 @@ initBoard(Board):-
 		write('Choix du cote du plateau'),
 		nl,
 		read(X),
+		integer(X),
 		open('camera.txt',write,Stream),
          	write(Stream,X),  nl(Stream),
          	close(Stream),
@@ -566,18 +611,16 @@ initBoard(Board):-
 		replaceGrille(Tab),
 		afficherJeu(Arg).
 
-
-
-
-
+initPionH_H(Board) :- positionnerPion(X).
 					   
-initPion(Board) :- 
+initPionIA_H(Board) :- 
 		positionnerPion(X),
 		placerAll_IA(Arg),afficherJeu(Arg).
 
+
+
+
 jeux(Board):-
 		initBoard(Board),
-		initPion(Board),
-		possibleMoves(Board,rouge,Lmove),
-		afficheListe(Lmove),
-		jouerRouge(Arg),afficherJeu(Arg).
+		initPionH_H(Board),
+		tour(Board).
