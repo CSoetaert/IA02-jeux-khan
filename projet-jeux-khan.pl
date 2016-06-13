@@ -77,12 +77,20 @@ replaceKhan(L):- khan(X),retract(khan(X)), asserta(khan(L)).
 %listes des pions en vie et des pions morts
 :- dynamic(pionRougeEnVie/1).
 pionRougeEnVie([kr, s1r, s2r, s3r, s4r, s5r]).
+replaceRougeEnVie(L) :- pionRougeEnVie(X),retract(pionRougeEnVie(X)), asserta(pionRougeEnVie(L)).
+
 :- dynamic(pionRougeMort/1).
-pionRougeMort([]).
+pionRougeMort([n,n,n,n,n,n]).
+replaceRougeMort(L) :- pionRougeMort(X),retract(pionRougeMort(X)), asserta(pionRougeMort(L)).
+
+
 :- dynamic(pionOcreEnVie/1).
 pionOcreEnVie([ko, s1o, s2o, s3o, s4o, s5o]).
+replaceOcreEnVie(L) :- pionOcreEnVie(X),retract(pionOcreEnVie(X)), asserta(pionOcreEnVie(L)).
+
 :- dynamic(pionOcreMort/1).
-pionOcreMort([]).
+pionOcreMort([n,n,n,n,n,n]).
+replaceOcreMort(L) :- pionOcreMort(X),retract(pionOcreMort(X)), asserta(pionOcreMort(L)).
 			
 %affichage du plateau pour le choix du coté
 affichageBoardChoix(Board) :-
@@ -472,6 +480,41 @@ verifierPionSelectionO(s4o):-!.
 verifierPionSelectionO(s5o):-!.
 verifierPionSelectionO(X) :- write('Pion selectioné invalide ! '),nl, fail.
 
+
+verifierPionPrisR(kr) :-!.
+verifierPionPrisR(s1r):-!.
+verifierPionPrisR(s2r):-!.
+verifierPionPrisR(s3r):-!.
+verifierPionPrisR(s4r):-!.
+verifierPionPrisR(s5r):-!.
+verifierPionPrisO(ko):-!.
+verifierPionPrisO(s1o):-!.
+verifierPionPrisO(s2o):-!.
+verifierPionPrisO(s3o):-!.
+verifierPionPrisO(s4o):-!.
+verifierPionPrisO(s5o):-!.
+
+
+insertMortR(X):-pionRougeEnVie(RV), rang(X,RV,N), 
+		pionRougeMort(RM),
+		replace(RV,N,n,L1),
+		replace(RM,N,X,L2),
+		replaceRougeEnVie(L1),
+		replaceRougeMort(L2).
+
+insertMortO(X):-pionOcreEnVie(OV), rang(X,OV,N), 
+		pionOcreMort(OM),
+		replace(OV,N,n,L1),
+		replace(OM,N,X,L2),
+		replaceOcreEnVie(L1),
+		replaceOcreMort(L2).
+
+
+prisePionR([X,Y]) :- lPosition(L), N is (Y-1)*6+X, nElement(N,L,X), insertMortR(X).
+
+prisePionO([X,Y]) :- lPosition(L), N is (Y-1)*6+X, nElement(N,L,X), insertMortO(X).
+
+
 % vrai quand un joueur a gagné
 gagne(ocre):-
 		pionRougeMort(L),
@@ -513,8 +556,9 @@ jouerCoupR([X,Y]) :-
 		write('Nouvelle position V :  '), read(NewX), integer(NewX),
 		write('Nouvelle position H :  '), read(NewY), integer(NewY),
 		%%trace,
+		NewN is (NewY-1)*6+NewX, nElement(NewN,L,Ancien), insertMortO(Ancien),
 		verifierDeplacement(NomPion,[NewX,NewY],rouge),
-	    rafraichirPositionCoup(n, [X,Y]),
+	    	rafraichirPositionCoup(n, [X,Y]),
 		rafraichirPositionCoup(NomPion, [NewX,NewY]),
 		%%notrace,
 		nl,write('avant changement khan'),nl,
@@ -547,6 +591,7 @@ jouerCoupO([X,Y]) :-
 		verifierPionSelectionO(NomPion),
 		write('Nouvelle position V :  '), read(NewX), integer(NewX),
 		write('Nouvelle position H :  '), read(NewY), integer(NewY),
+		NewN is (NewY-1)*6+NewX, nElement(NewN,L,Ancien), insertMortR(Ancien),
 		verifierDeplacement(NomPion,[NewX,NewY],ocre),
 	    rafraichirPositionCoup(n, [X,Y]),
 		rafraichirPositionCoup(NomPion, [NewX,NewY]),
